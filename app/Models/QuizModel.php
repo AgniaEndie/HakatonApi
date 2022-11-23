@@ -17,4 +17,6 @@ class QuizModel extends Model
         'id_advice'
     ];
 
+    protected $primaryKey = 'id_quiz';
+    public $timestamps = false;
 }

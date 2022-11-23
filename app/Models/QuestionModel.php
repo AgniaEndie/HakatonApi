@@ -13,4 +13,7 @@ class QuestionModel extends Model
       'id_category',
       'question'
     ];
+
+    protected $primaryKey = 'id_question';
+    public $timestamps = false;
 }

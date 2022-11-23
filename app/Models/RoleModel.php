@@ -13,4 +13,7 @@ class RoleModel extends Model
       'role_name',
       'role_status'
     ];
+
+    protected $primaryKey = "id_role";
+    public $timestamps= false;
 }

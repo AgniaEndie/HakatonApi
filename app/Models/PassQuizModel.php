@@ -13,4 +13,7 @@ class PassQuizModel extends Model
         'id_quiz',
         'id_user'
     ];
+
+    protected $primaryKey = 'id_pass_quiz';
+    public $timestamps = false;
 }

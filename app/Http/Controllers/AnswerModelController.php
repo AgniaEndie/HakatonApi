@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\AnswerModel;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AnswerModelController extends Controller
 {
@@ -14,7 +16,7 @@ class AnswerModelController extends Controller
      */
     public function index()
     {
-        //
+        return AnswerModel::all();
     }
 
     /**
@@ -22,9 +24,28 @@ class AnswerModelController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
-        //
+        $user = User::query()->where("id_user", Auth::user()->getAuthIdentifier())->first();
+        if ($user->id_role === 2) {
+            $answer = new AnswerModel();
+            $answer->answer = $request->answer;
+            $answer->id_question = $request->id_question;
+            $answer->save();
+
+            $data = [
+                'user' => Auth::user()->getAuthIdentifier(),
+                'status' => 'ok',
+                'user 1' => $user
+            ];
+            return response()->json($data, 201);
+        }else{
+            $data = [
+                'message' => 'permission denied',
+                'status' => 'failed'
+            ];
+            return response()->json($data, 301);
+        }
     }
 
     /**
@@ -55,9 +76,37 @@ class AnswerModelController extends Controller
      * @param  \App\Models\AnswerModel  $answerModel
      * @return \Illuminate\Http\Response
      */
-    public function edit(AnswerModel $answerModel)
+    public function edit(Request $request,$id)
     {
-        //
+        $user = User::query()->where("id_user", Auth::user()->getAuthIdentifier())->first();
+        if ($user->id_role === 2) {
+            $answer= AnswerModel::find($id);
+            if($answer){
+                $answer->answer = $request->answer;
+                $answer->id_question = $request->id_question;
+                $answer->update();
+                $data = [
+                    'user'=>Auth::user()->getAuthIdentifier(),
+                    'answer'=>$answer->answer,
+                    'id_question'=>$answer->id_question,
+                    "status"=>'ok',
+                    "id"=>$id
+                ];
+                return response()->json($data, 200);
+            }
+            $data = [
+                'user' => Auth::user()->getAuthIdentifier(),
+                'status' => 'ok',
+                'user 1' => $user
+            ];
+            return response()->json($data, 200);
+        }else{
+            $data = [
+                "message"=>"Access Denied",
+                "code"=>403
+            ];
+            return response()->json($data, 403);
+        }
     }
 
     /**
@@ -78,8 +127,32 @@ class AnswerModelController extends Controller
      * @param  \App\Models\AnswerModel  $answerModel
      * @return \Illuminate\Http\Response
      */
-    public function destroy(AnswerModel $answerModel)
+    public function destroy(Request $request, $id)
     {
-        //
+        $user = User::query()->where("id_user", Auth::user()->getAuthIdentifier())->first();
+        if ($user->id_role === 2) {
+            $answer= AnswerModel::find($id);
+            if($answer){
+                $answer->delete();
+                $data = [
+                    'user'=>Auth::user()->getAuthIdentifier(),
+                    "status"=>'ok',
+                    "id"=>$id
+                ];
+            }
+            $data = [
+                'user'=>Auth::user()->getAuthIdentifier(),
+                'message'=>"item is null",
+                "status"=>'failed',
+                "id"=>$id
+            ];
+            return response()->json($data, 200);
+        }else{
+            $data = [
+                "message"=>"Access Denied",
+                "code"=>403
+            ];
+            return response()->json($data, 403);
+        }
     }
 }

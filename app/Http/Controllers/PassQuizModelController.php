@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\PassQuizModel;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PassQuizModelController extends Controller
 {
@@ -14,7 +16,7 @@ class PassQuizModelController extends Controller
      */
     public function index()
     {
-        //
+        return PassQuizModel::all();
     }
 
     /**
@@ -22,9 +24,32 @@ class PassQuizModelController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
-        //
+        if (isset($request)) {
+
+            $user = User::query()->where("id_user", Auth::user()->getAuthIdentifier())->first();
+            if ($user->id_role === 2) {
+                $passquizmodel = new PassQuizModel();
+                $passquizmodel->id_quiz = $request->id_quiz;
+                $passquizmodel->id_user = $request->id_user;
+                $passquizmodel->save();
+
+                $data = [
+                    'user' => Auth::user()->getAuthIdentifier(),
+                    'status' => 'ok',
+                    'user 1' => $user
+                ];
+                return response()->json($data, 201);
+            } else {
+                $data = [
+                    'message' => 'permission denied',
+                    'status' => 'failed'
+                ];
+                return response()->json($data, 301);
+            }
+
+        }
     }
 
     /**
@@ -55,9 +80,37 @@ class PassQuizModelController extends Controller
      * @param  \App\Models\PassQuizModel  $passQuizModel
      * @return \Illuminate\Http\Response
      */
-    public function edit(PassQuizModel $passQuizModel)
+    public function edit(Request $request, $id)
     {
-        //
+        $user = User::query()->where("id_user", Auth::user()->getAuthIdentifier())->first();
+        if ($user->id_role === 2) {
+
+            $passquizmodel= PassQuizModel::find($id);
+            if($passquizmodel){
+                $passquizmodel->id_quiz = $request->id_quiz;
+                $passquizmodel->id_user = $request->id_user;
+                $passquizmodel->update();
+                $data = [
+                    'user'=>Auth::user()->getAuthIdentifier(),
+                    'id_quiz'=>$passquizmodel,
+                    'id_user'=>$passquizmodel->id_user,
+                    "status"=>'ok',
+                    "id"=>$id
+                ];
+                return response()->json($data, 200);
+            }
+            $data = [
+                'user' => Auth::user()->getAuthIdentifier(),
+                'status' => 'ok',
+                'user 1' => $user
+            ];
+            return response()->json($data, 200);
+        }
+        $data = [
+            "message"=>"Access Denied",
+            "code"=>403
+        ];
+        return response()->json($data, 403);
     }
 
     /**
@@ -78,8 +131,34 @@ class PassQuizModelController extends Controller
      * @param  \App\Models\PassQuizModel  $passQuizModel
      * @return \Illuminate\Http\Response
      */
-    public function destroy(PassQuizModel $passQuizModel)
+    public function destroy(Request $request, $id)
     {
-        //
+        $user = User::query()->where("id_user", Auth::user()->getAuthIdentifier())->first();
+        if ($user->id_role === 2) {
+
+            $passquizmodel= PassQuizModel::find($id);
+            if($passquizmodel){
+                $passquizmodel->delete();
+                $data = [
+                    'user'=>Auth::user()->getAuthIdentifier(),
+                    "status"=>'ok',
+                    "id"=>$id
+                ];
+                return response()->json($data, 200);
+            }
+            $data = [
+                'user'=>Auth::user()->getAuthIdentifier(),
+                'message'=>"item is null",
+                "status"=>'failed',
+                "id"=>$id
+            ];
+            return response()->json($data, 200);
+        }
+        $data = [
+            "message"=>"Access Denied",
+            "code"=>403
+        ];
+        return response()->json($data, 403);
     }
+    
 }

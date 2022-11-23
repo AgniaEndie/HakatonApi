@@ -12,4 +12,6 @@ class AdviceModel extends Model
     protected $fillable = [
       'advice_text'
     ];
+    protected $primaryKey = 'id_advice';
+    public $timestamps = false;
 }
